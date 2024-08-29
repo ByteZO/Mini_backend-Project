@@ -129,7 +129,6 @@ app.get("/likes/:id", checkloggedIn, async (req, res) => {
 
 app.get("/edit-post/:Id", checkloggedIn, async (req, res) => {
   const post = await PostModel.findOne({ _id: req.params.Id }).populate("user");
-
   res.render("editPost", { post });
 });
 
@@ -140,8 +139,6 @@ app.post("/update-post/:Id", checkloggedIn, async (req, res) => {
       content: req.body.content,
     }
   );
-
-  console.log("old data ", post);
 
   res.redirect("/profile");
 });

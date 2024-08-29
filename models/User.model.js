@@ -4,12 +4,14 @@ mongoose.connect(
   "mongodb+srv://miniprojectUser:****@cluster0.t3mxm.mongodb.net/miniPrject"
 );
 
+
 const userSchema = mongoose.Schema({
   userName: String,
   name: String,
   email: String,
   age: Number,
   password: String,
+  
   post: [
     {
       type: mongoose.Schema.Types.ObjectId,
