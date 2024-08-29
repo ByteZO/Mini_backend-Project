@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const UserModel = require("./models/User.model");
 const PostModel = require("./models/Post.model");
 const jwt = require("jsonwebtoken");
+const { nextTick } = require("process");
 const app = express();
 
 app.set("view engine", "ejs");
@@ -24,7 +25,13 @@ const checkloggedIn = (req, res, next) => {
   }
 };
 
-app.get("/", (req, res) => {
+const goToProfile = (req, res, next) => {
+  if (req.cookies.token === "") {
+    next();
+  } else res.redirect("/profile");
+};
+
+app.get("/", goToProfile, (req, res) => {
   res.render("index");
 });
 
@@ -105,6 +112,38 @@ app.post("/post", checkloggedIn, async (req, res) => {
   console.log(post);
 
   res.status(200).redirect("/profile");
+});
+
+app.get("/likes/:id", checkloggedIn, async (req, res) => {
+  const post = await PostModel.findOne({ _id: req.params.id }).populate("user");
+
+  if (post.Likes.indexOf(req.user.userId)) {
+    post.Likes.push(req.user.userId);
+  } else {
+    post.Likes.splice(post.Likes.indexOf(req.user.userId, 1));
+  }
+  await post.save();
+
+  res.redirect("/profile");
+});
+
+app.get("/edit-post/:Id", checkloggedIn, async (req, res) => {
+  const post = await PostModel.findOne({ _id: req.params.Id }).populate("user");
+
+  res.render("editPost", { post });
+});
+
+app.post("/update-post/:Id", checkloggedIn, async (req, res) => {
+  const post = await PostModel.findOneAndUpdate(
+    { _id: req.params.Id },
+    {
+      content: req.body.content,
+    }
+  );
+
+  console.log("old data ", post);
+
+  res.redirect("/profile");
 });
 
 app.listen(3000);
